@@ -1,0 +1,29 @@
+cmake_minimum_required(VERSION 3.28)
+project(BradensMinecraftClone C)
+
+set(CMAKE_C_STANDARD 99)
+
+cmake_policy(SET CMP0072 NEW)
+find_package(OpenGL REQUIRED)
+
+option(GLFW_BUILD_DOCS OFF)
+option(GLFW_BUILD_EXAMPLES OFF)
+option(GLFW_BUILD_TESTS OFF)
+add_subdirectory(external/glfw)
+
+include_directories(
+	include
+	external/glfw/include
+	external/glad/include
+	external/stb/include
+)
+
+add_executable (
+	${PROJECT_NAME}
+	src/main.c
+	src/window.c
+
+	external/glad/src/glad.c
+)
+
+target_link_libraries(${PROJECT_NAME} glfw OpenGL::GL)
