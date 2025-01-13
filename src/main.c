@@ -1,26 +1,14 @@
 #include <stdio.h>
 
 #include "window.h"
-
-const char *vertex_shader_source = "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "}\0";
-
-const char *fragment_shader_source = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "}\0";
+#include "shader.h"
+#include "math/matrix4f.h"
 
 static float vertices[] = {
-    -0.5f,  0.5f, 0.0f, // top left
-     0.5f,  0.5f, 0.0f, // top right
-    -0.5f, -0.5f, 0.0f, // bottom left
-     0.5f, -0.5f, 0.0f  // bottom right
+    -1.0f,  1.0f, 0.0f, // top left
+     1.0f,  1.0f, 0.0f, // top right
+    -1.0f, -1.0f, 0.0f, // bottom left
+     1.0f, -1.0f, 0.0f  // bottom right
 };
 static unsigned int indices[] = {
     0, 2, 1, // left triangle
@@ -28,7 +16,7 @@ static unsigned int indices[] = {
 };
 
 int main() {
-    Window window = window_create(640, 480, "Braden's Minecraft Clone");
+    Window window = window_create(1920, 1080, "Minecraft Clone");
 
     // quad
     unsigned int VAO, VBO, EBO;
@@ -51,28 +39,30 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    // shaders
-    unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    unsigned int fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+    Shader test_shader = shader_create("../assets/shaders/test.vert", "../assets/shaders/test.frag");
 
-    glShaderSource(vertex_shader, 1, &vertex_shader_source, NULL);
-    glShaderSource(fragment_shader, 1, &fragment_shader_source, NULL);
+    Matrix4f model = matrix4f_identity();
+    Matrix4f view = matrix4f_identity();
+    Matrix4f projection = matrix4f_perspective(75, (float) window_get_width(&window) / (float) window_get_height(&window), 0.01f, 1000.0f);
 
-    glCompileShader(vertex_shader);
-    glCompileShader(fragment_shader);
+    matrix4f_translate(&view, (Vector3f) {0.0f, 0.0f, -3.0f});
 
-    unsigned int shader_program = glCreateProgram();
-    glAttachShader(shader_program, vertex_shader);
-    glAttachShader(shader_program, fragment_shader);
-    glLinkProgram(shader_program);
-
-    glDeleteShader(vertex_shader);
-    glDeleteShader(fragment_shader);
+    shader_use(&test_shader);
+    glUniformMatrix4fv(glGetUniformLocation(test_shader.id, "model"), 1, GL_FALSE, model.values);
+    glUniformMatrix4fv(glGetUniformLocation(test_shader.id, "view"), 1, GL_FALSE, view.values);
+    glUniformMatrix4fv(glGetUniformLocation(test_shader.id, "projection"), 1, GL_FALSE, projection.values);
 
     while (!window_should_close(&window)) {
+        if (window.just_resized) {
+            shader_use(&test_shader);
+            projection = matrix4f_perspective(60.0f, (float) window_get_width(&window) / (float) window_get_height(&window), 0.01f, 1000.0f);
+            glUniformMatrix4fv(glGetUniformLocation(test_shader.id, "projection"), 1, GL_FALSE, projection.values);
+            window.just_resized = false;
+        }
+        
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(shader_program);
+        shader_use(&test_shader);
         glBindVertexArray(VAO);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
         glDrawElements(GL_TRIANGLES, sizeof(indices), GL_UNSIGNED_INT, 0);
@@ -80,7 +70,7 @@ int main() {
         window_update(&window);
     }
 
-    glDeleteProgram(shader_program);
+    shader_delete(&test_shader);
     glDeleteBuffers(1, &EBO);
     glDeleteBuffers(1, &VBO);
     glDeleteVertexArrays(1, &VAO);

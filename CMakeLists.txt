@@ -22,6 +22,9 @@ add_executable (
 	${PROJECT_NAME}
 	src/main.c
 	src/window.c
+	src/shader.c
+
+	src/math/matrix4f.c
 
 	external/glad/src/glad.c
 )

@@ -44,9 +44,10 @@ Window window_create(int width, int height, const char* title) {
 
 void window_resize_callback(GLFWwindow* window, int width, int height) {
     Window* window_struct = (Window*) glfwGetWindowUserPointer(window);
-    window_struct->just_resized = true;
 
     glViewport(0, 0, width, height);
+
+    window_struct->just_resized = true;
 }
 
 bool window_should_close(Window* window) {
@@ -66,8 +67,6 @@ int window_get_height(Window* window) {
 }
 
 void window_update(Window* window) {
-    window->just_resized = false;
-
     glfwPollEvents();
     glfwSwapBuffers(window->glfw_window);
 }
