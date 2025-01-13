@@ -1,12 +1,14 @@
 #pragma once
 
+#include <stdbool.h>
+
 typedef enum Block_Type {
     AIR,
     GRASS
 } Block_Type;
 
 typedef struct Block {
-    Block_Type block_type;
+    Block_Type type;
     
     bool is_top_face_visable;
     bool is_bottom_face_visable;
@@ -15,3 +17,5 @@ typedef struct Block {
     bool is_forward_face_visable;
     bool is_backward_face_visable;
 } Block;
+
+Block block_create(Block_Type block_type);

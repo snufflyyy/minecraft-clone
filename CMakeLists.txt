@@ -23,6 +23,8 @@ add_executable (
 	src/main.c
 	src/window.c
 	src/shader.c
+	src/block.c
+	src/chunk.c
 
 	src/math/matrix4f.c
 

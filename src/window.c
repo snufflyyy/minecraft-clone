@@ -35,6 +35,7 @@ Window window_create(int width, int height, const char* title) {
     }  
 
     glViewport(0, 0, width, height);
+    glEnable(GL_DEPTH_TEST);
 
     glfwSetWindowUserPointer(window.glfw_window, &window);
     glfwSetFramebufferSizeCallback(window.glfw_window, window_resize_callback);

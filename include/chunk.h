@@ -1,9 +1,11 @@
 #pragma once
 
+#define CHUNK_SIZE 16
+
 #include "block.h"
 
 typedef struct Chunk {
-    Block blocks[16][16][16];
+    Block blocks[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
     unsigned int VAO, VBO, EBO;
 } Chunk;
 

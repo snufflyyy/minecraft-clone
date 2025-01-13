@@ -68,7 +68,7 @@ void matrix4f_translate(Matrix4f* matrix, Vector3f vector) {
 }
 
 void matrix4f_rotate(Matrix4f* matrix, float angle, Vector3f vector) {
-    angle *= (M_PI / 180);
+    angle *= (M_PI / 180.0f);
 
     float cos_angle = cosf(angle);
     float sin_angle = sinf(angle);
@@ -94,9 +94,9 @@ void matrix4f_rotate(Matrix4f* matrix, float angle, Vector3f vector) {
 Matrix4f matrix4f_perspective(float fov, float aspect_ratio, float near_plane, float far_plane) {
     Matrix4f matrix = {0};
 
-    fov *= (M_PI / 180);
+    fov *= (M_PI / 180.0f);
 
-    float tan_half_fov = tan(fov / 2);
+    float tan_half_fov = tanf(fov / 2);
 
     matrix.values[0] = 1 / (aspect_ratio * tan_half_fov);
     matrix.values[1] = 0;
