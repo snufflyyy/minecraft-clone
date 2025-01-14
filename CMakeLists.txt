@@ -23,6 +23,7 @@ add_executable (
 	src/main.c
 	src/window.c
 	src/shader.c
+	src/camera.c
 	src/block.c
 	src/chunk.c
 

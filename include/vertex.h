@@ -1,7 +1,10 @@
 #pragma once
 
+#include "math/vector3f.h"
+#include "math/vector2f.h"
+
 typedef struct Vertex {
-    float position[3];
-    float normal[3];
-    float texture_coord[2];
+    Vector3f position;
+    Vector3f normal;
+    Vector2f texture_coord;
 } Vertex;
