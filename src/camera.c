@@ -1,12 +1,12 @@
 #include "camera.h"
 
-#include <glad/glad.h>
+#include <math.h>
 
-Fly_Camera createFlyCamera(int windowWidth, int windowHeight) {
+Fly_Camera fly_camera_create(int windowWidth, int windowHeight) {
     Fly_Camera camera = {0};
 
-    camera.speed = 0.0005f;
-    camera.fov = 75.0f;
+    camera.speed = 0.005f;
+    camera.fov = 60.0f;
 
     camera.position = (Vector3f) {0.0f, 0.0f, 0.0f};
     camera.front = (Vector3f) {0.0f, 0.0f, -1.0f};
@@ -21,65 +21,61 @@ Fly_Camera createFlyCamera(int windowWidth, int windowHeight) {
     return camera;
 }
 
-void updateFlyCamera(Fly_Camera* camera) {
-    Vector3f center = vector3f_add(camera->position, camera->front);
-    glm_lookat(camera->position, center, camera->up, camera->view);
+void fly_camera_update(Fly_Camera* camera) {
+    Vector3f center = vector3f_add(&camera->position, &camera->front);
+    camera->view = matrix4f_look_at(camera->position, center, camera->up);
 }
 
-void moveFlyCameraPosition(Fly_Camera* camera, Camera_Direction direction) {
+void fly_camera_move(Fly_Camera* camera, Camera_Direction direction) {
     switch (direction) {
         case FORWARD:
-            vec3 up = {camera->front[0], camera->front[1], camera->front[2]};
-            glm_vec3_scale(up, camera->speed, up);
-            glm_vec3_add(camera->position, up, camera->position);
+            Vector3f up = {camera->front.x, camera->front.y, camera->front.z};
+            vector3f_scale(&up, camera->speed);
+            camera->position = vector3f_add(&camera->position, &up);
             break;
         case BACKWARD:
-            vec3 down = {camera->front[0], camera->front[1], camera->front[2]};
-            glm_vec3_scale(down, camera->speed, down);
-            glm_vec3_sub(camera->position, down, camera->position);
+            Vector3f down = {camera->front.x, camera->front.y, camera->front.z};
+            vector3f_scale(&down, camera->speed);
+            camera->position = vector3f_subtract(&camera->position, &down);
             break;
         case LEFT:
-            vec3 left;
-            glm_vec3_cross(camera->front, camera->up, left);
-            glm_vec3_normalize(left); 
-            glm_vec3_scale(left, camera->speed, left);
-            glm_vec3_sub(camera->position, left, camera->position);
+            Vector3f left = vector3f_cross_product(&camera->front, &camera->up);
+            vector3f_normalize(&left);
+            vector3f_scale(&left, camera->speed);
+            camera->position = vector3f_subtract(&camera->position, &left);
             break;
         case RIGHT:
-            vec3 right;
-            glm_vec3_cross(camera->front, camera->up, right);
-            glm_vec3_normalize(right); 
-            glm_vec3_scale(right, camera->speed, right);
-            glm_vec3_add(camera->position, right, camera->position);
+            Vector3f right = vector3f_cross_product(&camera->front, &camera->up);
+            vector3f_normalize(&right);
+            vector3f_scale(&right, camera->speed);
+            camera->position = vector3f_add(&camera->position, &right);
             break;
     }
 }
 
-void moveFlyCameraAngle(FlyCamera* camera, double newMouseX, double newMouseY) {
-    float xOffset = newMouseX - camera->lastMouseX;
-    float yOffset = camera->lastMouseY - newMouseY;
+void fly_camera_change_angle(Fly_Camera* camera, double new_mouse_x, double new_mouse_y) {
+    float xOffset = (float) new_mouse_x - camera->last_mouse_x;
+    float yOffset = camera->last_mouse_y - (float) new_mouse_y;
 
-    camera->lastMouseX = newMouseX;
-    camera->lastMouseY = newMouseY;
+    camera->last_mouse_x = (float) new_mouse_x;
+    camera->last_mouse_y = (float) new_mouse_y;
 
     const float sensitivity = 0.1f;
     xOffset *= sensitivity;
     yOffset *= sensitivity;
 
-    static float yaw = -90.0f;
-    static float pitch = 0.0f;
+    float yaw = -90.0f;
+    float pitch = 0.0f;
 
     yaw += xOffset;
     pitch += yOffset;
 
-    if (pitch > 89.0f)
-        pitch = 89.0f;
-    if (pitch < -89.0f)
-        pitch = -89.0f;
+    if (pitch > 89.0f) { pitch = 89.0f; }
+    if (pitch < -89.0f) { pitch = -89.0f; }
 
-    vec3 direction;
-    direction[0] = cos(glm_rad(yaw)) * cos(glm_rad(pitch));
-    direction[1] = sin(glm_rad(pitch));
-    direction[2] = sin(glm_rad(yaw)) * cos(glm_rad(pitch));
-    glm_vec3_normalize_to(direction, camera->front);
+    Vector3f direction;
+    direction.x = cosf(yaw * ((float) M_PI / 180.0f)) * cosf(pitch * ((float) M_PI / 180.0f));
+    direction.y = sinf(pitch * ((float) M_PI / 180.0f));
+    direction.z = sinf(yaw * ((float) M_PI / 180.0f)) * cosf(pitch * ((float) M_PI / 180.0f));
+    vector3f_normalize_and_scale(&direction, &camera->front);
 }

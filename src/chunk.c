@@ -98,6 +98,7 @@ Chunk chunk_create() {
 
                 // generate faces
                 if (chunk.blocks[x][y][z].is_left_face_visable) {
+                    // get all the possible faces first because realloc is slow
                     chunk.vertices = realloc(chunk.vertices, (chunk.number_of_vertices + 4) * sizeof(Vertex));
                     chunk.indices = realloc(chunk.indices, (chunk.number_of_indices + 6) * sizeof(unsigned int));
 

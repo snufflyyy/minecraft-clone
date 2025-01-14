@@ -48,27 +48,20 @@ Matrix4f matrix4f_multiply(Matrix4f* matrix1, Matrix4f* matrix2) {
 }
 
 void matrix4f_scale(Matrix4f* matrix, Vector3f vector) {
-    Matrix4f scale_matrix = matrix4f_identity();
-    
-    scale_matrix.values[0] = vector.x;
-    scale_matrix.values[5] = vector.y;
-    scale_matrix.values[10] = vector.z;
-
-    *matrix = matrix4f_multiply(matrix, &scale_matrix);
+    matrix->values[0] *= vector.x;
+    matrix->values[5] *= vector.y;
+    matrix->values[10] *= vector.z;
 }
 
 void matrix4f_translate(Matrix4f* matrix, Vector3f vector) {
-    Matrix4f translate_matrix = matrix4f_identity();
-
-    translate_matrix.values[12] += vector.x;
-    translate_matrix.values[13] += vector.y;
-    translate_matrix.values[14] += vector.z;
-
-    *matrix = matrix4f_multiply(matrix, &translate_matrix);
+    matrix->values[12] += vector.x;
+    matrix->values[13] += vector.y;
+    matrix->values[14] += vector.z;
 }
 
 void matrix4f_rotate(Matrix4f* matrix, float angle, Vector3f vector) {
-    angle *= (M_PI / 180.0f);
+    angle *= ((float) M_PI / 180.0f);
+    vector3f_normalize(&vector);
 
     float cos_angle = cosf(angle);
     float sin_angle = sinf(angle);
@@ -94,7 +87,7 @@ void matrix4f_rotate(Matrix4f* matrix, float angle, Vector3f vector) {
 Matrix4f matrix4f_perspective(float fov, float aspect_ratio, float near_plane, float far_plane) {
     Matrix4f matrix = {0};
 
-    fov *= (M_PI / 180.0f);
+    fov *= ((float) M_PI / 180.0f);
 
     float tan_half_fov = tanf(fov / 2);
 
@@ -117,6 +110,36 @@ Matrix4f matrix4f_perspective(float fov, float aspect_ratio, float near_plane, f
     matrix.values[13] = 0;
     matrix.values[14] = -(2 * far_plane * near_plane) / (far_plane - near_plane);
     matrix.values[15] = 0;
+
+    return matrix;
+}
+
+Matrix4f matrix4f_look_at(Vector3f position, Vector3f center, Vector3f up) {
+    Vector3f forward = vector3f_subtract(&center, &position);
+    vector3f_normalize(&forward);
+    vector3f_normalize(&up);
+
+    Vector3f side = vector3f_cross_product(&forward, &up);
+    up = vector3f_cross_product(&side, &forward);
+
+    Matrix4f matrix = matrix4f_identity();
+
+    matrix.values[0] = side.x;
+    matrix.values[1] = up.x;
+    matrix.values[2] = -forward.x;
+
+    matrix.values[4] = side.y;
+    matrix.values[5] = up.y;
+    matrix.values[6] = -forward.y;
+
+    matrix.values[8] = side.z;
+    matrix.values[9] = up.z;
+    matrix.values[10] = -forward.z;
+
+    matrix.values[12] = -vector3f_dot_product(&side, &position);
+    matrix.values[13] = -vector3f_dot_product(&up, &position);
+    matrix.values[14] = -vector3f_dot_product(&forward, &position);
+
 
     return matrix;
 }

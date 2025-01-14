@@ -28,6 +28,7 @@ add_executable (
 	src/chunk.c
 
 	src/math/matrix4f.c
+	src/math/vector3f.c
 
 	external/glad/src/glad.c
 )

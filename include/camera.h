@@ -25,7 +25,7 @@ typedef struct Fly_Camera {
     Matrix4f projection;
 } Fly_Camera;
 
-Fly_Camera createFlyCamera(int window_width, int window_height);
-void updateFlyCamera(Fly_Camera* camera);
-void moveFlyCameraPosition(Fly_Camera* camera, Camera_Direction direction);
-void moveFlyCameraAngle(Fly_Camera* camera, double new_x, double new_y);
+Fly_Camera fly_camera_create(int window_width, int window_height);
+void fly_camera_update(Fly_Camera* camera);
+void fly_camera_move(Fly_Camera* camera, Camera_Direction direction);
+void fly_camera_change_angle(Fly_Camera* camera, double new_x, double new_y);
