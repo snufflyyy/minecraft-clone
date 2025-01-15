@@ -3,11 +3,10 @@
 #include <time.h>
 
 #include <glad/glad.h>
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 
 #include "window.h"
 #include "shader.h"
+#include "texture.h"
 #include "camera.h"
 #include "chunk.h"
 #include "math/matrix4f.h"
@@ -55,41 +54,13 @@ void calculate_fps_and_deltatime() {
     }
 }
 
-#define NUMBER_OF_CHUNKS 1
-
 int main() {
-    srand(time(NULL));
-
-    Window window = window_create(1920, 1080, "Minecraft Clone");
+    Window window = window_create(1280, 720, "Minecraft Clone");
     Shader test_shader = shader_create("../assets/shaders/test.vert", "../assets/shaders/test.frag");
+    Texture texture = texture_create("../assets/textures/dirt.jpg");
     Fly_Camera camera = fly_camera_create(window_get_width(&window), window_get_height(&window));
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    int width, height, channels;
-    unsigned char* image = stbi_load("../assets/textures/dirt.jpg", &width, &height, &channels, 4);
-    if (!image) {
-        printf("failed!\n");
-    }
-
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    stbi_image_free(image);
-
-    Chunk test_chunks[NUMBER_OF_CHUNKS];
-    for (int i = 0; i < NUMBER_OF_CHUNKS; i++) {
-        test_chunks[i] = chunk_create();
-    }
-
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    Chunk test_chunk = chunk_create();
 
     while (!window_should_close(&window)) {
         calculate_fps_and_deltatime();
@@ -99,14 +70,11 @@ int main() {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shader_use(&test_shader);
-        for (int i = 0; i < NUMBER_OF_CHUNKS; i++) {
-            //chunk_generate_mesh(&test_chunks[i]);
-            test_chunks[i].model = matrix4f_identity();
-            matrix4f_translate(&test_chunks[i].model, (Vector3f) {(float) i * CHUNK_SIZE, 0.0f, 0.0f});
-            glUniformMatrix4fv(glGetUniformLocation(test_shader.id, "model"), 1, GL_FALSE, test_chunks[i].model.values);
-            chunk_draw(&test_chunks[i]);
-        }
+        texture_bind(&texture);
+        shader_bind(&test_shader);
+        test_chunk.model = matrix4f_identity();
+        glUniformMatrix4fv(glGetUniformLocation(test_shader.id, "model"), 1, GL_FALSE, test_chunk.model.values);
+        chunk_draw(&test_chunk);
 
         glUniformMatrix4fv(glGetUniformLocation(test_shader.id, "view"), 1, GL_FALSE, camera.view.values);
         glUniformMatrix4fv(glGetUniformLocation(test_shader.id, "projection"), 1, GL_FALSE, camera.projection.values);
@@ -115,6 +83,7 @@ int main() {
     }
 
     shader_delete(&test_shader);
+    texture_delete(&texture);
     window_destory(&window);
 
     return 0;

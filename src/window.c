@@ -33,7 +33,7 @@ Window window_create(int width, int height, const char* title) {
     }
 
     glfwMakeContextCurrent(window.glfw_window);
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         printf("ERROR: Failed to initialize GLAD\n");

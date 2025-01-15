@@ -12,33 +12,37 @@ static unsigned int create_individual_shader(const char* shader_source, GLenum s
 Shader shader_create(const char* vertex_shader_path, const char* fragment_shader_path) {
     Shader shader = {0};
     
-    unsigned int vertexShader = create_individual_shader(file_to_string(vertex_shader_path), GL_VERTEX_SHADER);
-    unsigned int fragmentShader = create_individual_shader(file_to_string(fragment_shader_path), GL_FRAGMENT_SHADER);
+    unsigned int vertex_shader = create_individual_shader(file_to_string(vertex_shader_path), GL_VERTEX_SHADER);
+    unsigned int fragment_shader = create_individual_shader(file_to_string(fragment_shader_path), GL_FRAGMENT_SHADER);
 
     shader.id = glCreateProgram();
 
-    glAttachShader(shader.id, vertexShader);
-    glAttachShader(shader.id, fragmentShader);
+    glAttachShader(shader.id, vertex_shader);
+    glAttachShader(shader.id, fragment_shader);
     glLinkProgram(shader.id);
 
-    int shaderResult;
-    char shaderResultBuffer[512];
+    int shader_result;
+    char shader_result_buffer[512];
 
-    glGetProgramiv(shader.id, GL_LINK_STATUS, &shaderResult);
-    if (!shaderResult) {
-        glGetProgramInfoLog(shader.id, 512, NULL, shaderResultBuffer);
+    glGetProgramiv(shader.id, GL_LINK_STATUS, &shader_result);
+    if (!shader_result) {
+        glGetProgramInfoLog(shader.id, 512, NULL, shader_result_buffer);
         printf("ERROR: Failed to link shader program!\n");
-        printf("%s", shaderResultBuffer);
+        printf("%s", shader_result_buffer);
     }
 
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    glDeleteShader(vertex_shader);
+    glDeleteShader(fragment_shader);
 
     return shader;
 }
 
-void shader_use(Shader* shader) {
+void shader_bind(Shader* shader) {
     glUseProgram(shader->id);
+}
+
+void shader_unbind() {
+    glUseProgram(0);
 }
 
 void shader_delete(Shader* shader) {
@@ -55,13 +59,13 @@ static const char* file_to_string(const char* file_path) {
     int length = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    char* string = malloc(length + 1); // + 1 for null terminator
+    char* string = malloc(length + 1); // + 1 bc null terminator
     if (!string) {
         printf("ERROR: Failed to allocate memory for string!\n");
     }
 
-    unsigned int bytesRead = fread(string, 1, length, file);
-    string[bytesRead] = '\0'; 
+    unsigned int bytes_read = fread(string, 1, length, file);
+    string[bytes_read] = '\0';
     
     fclose(file);
 
@@ -69,17 +73,17 @@ static const char* file_to_string(const char* file_path) {
 }
 
 static unsigned int create_individual_shader(const char* shader_source, GLenum shader_type) {
-    int shaderResult;
-    char shaderResultBuffer[512];
+    int shader_result;
+    char shader_result_buffer[512];
 
     unsigned int shader = glCreateShader(shader_type);
 
     glShaderSource(shader, 1, &shader_source, NULL);
     glCompileShader(shader);
 
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &shaderResult);
-    if (!shaderResult) {
-        glGetShaderInfoLog(shader, 512, NULL, shaderResultBuffer);
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &shader_result);
+    if (!shader_result) {
+        glGetShaderInfoLog(shader, 512, NULL, shader_result_buffer);
 
         char* type;
         switch (shader_type) {
@@ -95,7 +99,7 @@ static unsigned int create_individual_shader(const char* shader_source, GLenum s
         }
 
         printf("ERROR: Failed to compile %s shader!\n", type);
-        printf("%s", shaderResultBuffer);
+        printf("%s", shader_result_buffer);
     }
 
     return shader;
