@@ -21,6 +21,11 @@ Window window_create(int width, int height, const char* title) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+    #ifdef __APPLE__
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GL_FALSE);
+    #endif
+
     window.glfw_window = glfwCreateWindow(width, height, title, NULL, NULL);
     if (!window.glfw_window) {
         printf("ERROR: Failed to create GLFW window!\n");
@@ -28,6 +33,7 @@ Window window_create(int width, int height, const char* title) {
     }
 
     glfwMakeContextCurrent(window.glfw_window);
+    glfwSwapInterval(1);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         printf("ERROR: Failed to initialize GLAD\n");
@@ -37,8 +43,14 @@ Window window_create(int width, int height, const char* title) {
     glViewport(0, 0, width, height);
     glEnable(GL_DEPTH_TEST);
 
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+
     glfwSetWindowUserPointer(window.glfw_window, &window);
     glfwSetFramebufferSizeCallback(window.glfw_window, window_resize_callback);
+    glfwSetInputMode(window.glfw_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+    glfwSetInputMode(window.glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     return window;
 }

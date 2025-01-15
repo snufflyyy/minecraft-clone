@@ -117,9 +117,11 @@ Matrix4f matrix4f_perspective(float fov, float aspect_ratio, float near_plane, f
 Matrix4f matrix4f_look_at(Vector3f position, Vector3f center, Vector3f up) {
     Vector3f forward = vector3f_subtract(&center, &position);
     vector3f_normalize(&forward);
+
     vector3f_normalize(&up);
 
     Vector3f side = vector3f_cross_product(&forward, &up);
+    vector3f_normalize(&side);
     up = vector3f_cross_product(&side, &forward);
 
     Matrix4f matrix = matrix4f_identity();
@@ -138,7 +140,7 @@ Matrix4f matrix4f_look_at(Vector3f position, Vector3f center, Vector3f up) {
 
     matrix.values[12] = -vector3f_dot_product(&side, &position);
     matrix.values[13] = -vector3f_dot_product(&up, &position);
-    matrix.values[14] = -vector3f_dot_product(&forward, &position);
+    matrix.values[14] = vector3f_dot_product(&forward, &position);
 
 
     return matrix;

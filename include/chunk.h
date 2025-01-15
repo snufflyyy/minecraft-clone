@@ -19,4 +19,5 @@ typedef struct Chunk {
 } Chunk;
 
 Chunk chunk_create();
+void chunk_generate_mesh(Chunk* chunk);
 void chunk_draw(Chunk* chunk);
