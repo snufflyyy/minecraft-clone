@@ -2,11 +2,6 @@
 
 #include <math.h>
 
-// this is needed because M_PI is not standard for sum reason
-#ifndef M_PI
-    #define M_PI 3.1415926535897932384626433832
-#endif
-
 Matrix4f matrix4f_identity() {
     Matrix4f matrix = {0};
 

@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "xutility": "c",
-        "__node_handle": "c"
+        "__node_handle": "c",
+        "stdlib.h": "c",
+        "stddef.h": "c"
     }
 }

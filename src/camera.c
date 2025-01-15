@@ -1,5 +1,7 @@
 #include "camera.h"
 
+#include "math/matrix4f.h"
+
 #include <math.h>
 
 Fly_Camera fly_camera_create(int windowWidth, int windowHeight) {

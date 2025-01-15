@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stddef.h>
+#include <stdio.h>
 
 #include <glad/glad.h>
 
@@ -11,27 +12,12 @@ Chunk chunk_create() {
     // temp until world generation is done
     // just setting all the blocks to grass for now
     for (int x = 0; x < CHUNK_SIZE; x++) {
-        for (int y = 0; y < CHUNK_SIZE; y++) {
-            for (int z = 0; z < CHUNK_SIZE; z++) {
-                chunk.blocks[x][y][z].type = GRASS;
-            }
-        }
-    }
-
-    chunk.number_of_vertices = 0;
-    chunk.number_of_indices = 0;
-
-    for (int x = 0; x < CHUNK_SIZE; x++) {
-        for (int y = 0; y < CHUNK_SIZE; y++) {
-            for (int z = 0; z < CHUNK_SIZE; z++) {
-                if (chunk.blocks[x][y][z].type == AIR) { continue; }
-
-                chunk.blocks[x][y][z].is_left_face_visable     = (x == 0 || chunk.blocks[x - 1][y][z].type == AIR);
-                chunk.blocks[x][y][z].is_right_face_visable    = (x == CHUNK_SIZE - 1 || chunk.blocks[x + 1][y][z].type == AIR);
-                chunk.blocks[x][y][z].is_top_face_visable      = (y == CHUNK_SIZE - 1 || chunk.blocks[x][y + 1][z].type == AIR);
-                chunk.blocks[x][y][z].is_bottom_face_visable   = (y == 0 || chunk.blocks[x][y - 1][z].type == AIR);
-                chunk.blocks[x][y][z].is_forward_face_visable  = (z == 0 || chunk.blocks[x][y][z + 1].type == AIR);
-                chunk.blocks[x][y][z].is_backward_face_visable = (z == CHUNK_SIZE - 1 || chunk.blocks[x][y][z - 1].type == AIR);
+        for (int z = 0; z < CHUNK_SIZE; z++) {
+            int random_y = rand() % CHUNK_SIZE;
+            for (int y = 0; y < CHUNK_SIZE; y++) {
+                if (y <= random_y) {
+                    chunk.blocks[x][y][z].type = GRASS;
+                }
             }
         }
     }
@@ -68,32 +54,38 @@ Chunk chunk_create() {
 }
 
 void chunk_generate_mesh(Chunk* chunk) {
+    chunk->number_of_vertices = 0;
+    chunk->number_of_indices = 0;
+
+    int max_vertices = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 4 * 6;
+    int max_indices = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 6 * 6;
+
+    chunk->vertices = malloc(max_vertices * sizeof(Vertex));
+    chunk->indices = malloc(max_indices * sizeof(unsigned int));
+
     for (int x = 0; x < CHUNK_SIZE; x++) {
         for (int y = 0; y < CHUNK_SIZE; y++) {
             for (int z = 0; z < CHUNK_SIZE; z++) {
+                if (chunk->blocks[x][y][z].type == AIR) { continue; }
+
                 // generate top face
-                if (chunk->blocks[x][y][z].is_top_face_visable) {
-                    chunk->vertices = realloc(chunk->vertices, (chunk->number_of_vertices + 4) * sizeof(Vertex));
-                    chunk->indices = realloc(chunk->indices, (chunk->number_of_indices + 6) * sizeof(unsigned int));
-
-                    Vertex v0, v1, v2, v3;
-
-                    v0 = (Vertex) {
+                if (y == CHUNK_SIZE - 1 || chunk->blocks[x][y + 1][z].type == AIR) {
+                    Vertex v0 = {
                         .position = {x - 0.5f, y + 0.5f, z + 0.5f},
                         .normal = {0.0f, 1.0f, 0.0f},
                         .texture_coord = {1.0f, 0.0f}
                     };
-                    v1 = (Vertex) {
+                    Vertex v1 = {
                         .position = {x + 0.5f, y + 0.5f, z + 0.5f},
                         .normal = {0.0f, 1.0f, 0.0f},
                         .texture_coord = {0.0f, 0.0f}
                     };
-                    v2 = (Vertex) {
+                    Vertex v2 = {
                         .position = {x + 0.5f, y + 0.5f, z - 0.5f},
                         .normal = {0.0f, 1.0f, 0.0f},
                         .texture_coord = {0.0f, 1.0f}
                     };
-                    v3 = (Vertex) {
+                    Vertex v3 = {
                         .position = {x - 0.5f, y + 0.5f, z - 0.5f},
                         .normal = {0.0f, 1.0f, 0.0f},
                         .texture_coord = {1.0f, 1.0f}
@@ -115,28 +107,23 @@ void chunk_generate_mesh(Chunk* chunk) {
                 }
 
                 // generate bottom face
-                if (chunk->blocks[x][y][z].is_bottom_face_visable) {
-                    chunk->vertices = realloc(chunk->vertices, (chunk->number_of_vertices + 4) * sizeof(Vertex));
-                    chunk->indices = realloc(chunk->indices, (chunk->number_of_indices + 6) * sizeof(unsigned int));
-
-                    Vertex v0, v1, v2, v3;
-
-                    v0 = (Vertex) {
+                if (y == 0 || chunk->blocks[x][y - 1][z].type == AIR) {
+                    Vertex v0 = {
                         .position = {x - 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {0.0f, -1.0f, 0.0f},
                         .texture_coord = {1.0f, 0.0f}
                     };
-                    v1 = (Vertex) {
+                    Vertex v1 = {
                         .position = {x + 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {0.0f, -1.0f, 0.0f},
                         .texture_coord = {0.0f, 0.0f}
                     };
-                    v2 = (Vertex) {
+                    Vertex v2 = {
                         .position = {x + 0.5f, y - 0.5f, z - 0.5f},
                         .normal = {0.0f, -1.0f, 0.0f},
                         .texture_coord = {0.0f, 1.0f}
                     };
-                    v3 = (Vertex) {
+                    Vertex v3 = {
                         .position = {x - 0.5f, y - 0.5f, z - 0.5f},
                         .normal = {0.0f, -1.0f, 0.0f},
                         .texture_coord = {1.0f, 1.0f}
@@ -158,28 +145,23 @@ void chunk_generate_mesh(Chunk* chunk) {
                 }
 
                 // generate forward face
-                if (chunk->blocks[x][y][z].is_forward_face_visable) {
-                    chunk->vertices = realloc(chunk->vertices, (chunk->number_of_vertices + 4) * sizeof(Vertex));
-                    chunk->indices = realloc(chunk->indices, (chunk->number_of_indices + 6) * sizeof(unsigned int));
-
-                    Vertex v0, v1, v2, v3;
-                    
-                    v0 = (Vertex) {
+                if (z == 0 || chunk->blocks[x][y][z - 1].type == AIR) {
+                    Vertex v0 = {
                         .position = {x - 0.5f, y - 0.5f, z - 0.5f},
                         .normal = {0.0f, 0.0f, -1.0f},
                         .texture_coord = {1.0f, 0.0f}
                     };
-                    v1 = (Vertex) {
+                    Vertex v1 = {
                         .position = {x + 0.5f, y - 0.5f, z - 0.5f},
                         .normal = {0.0f, 0.0f, -1.0f},
                         .texture_coord = {0.0f, 0.0f}
                     };
-                    v2 = (Vertex) {
+                    Vertex v2 = {
                         .position = {x + 0.5f, y + 0.5f, z - 0.5f},
                         .normal = {0.0f, 0.0f, -1.0f},
                         .texture_coord = {0.0f, 1.0f}
                     };
-                    v3 = (Vertex) {
+                    Vertex v3 = {
                         .position = {x - 0.5f, y + 0.5f, z - 0.5f},
                         .normal = {0.0f, 0.0f, -1.0f},
                         .texture_coord = {1.0f, 1.0f}
@@ -201,28 +183,23 @@ void chunk_generate_mesh(Chunk* chunk) {
                 }
 
                 // generate backward face
-                if (chunk->blocks[x][y][z].is_backward_face_visable) {
-                    chunk->vertices = realloc(chunk->vertices, (chunk->number_of_vertices + 4) * sizeof(Vertex));
-                    chunk->indices = realloc(chunk->indices, (chunk->number_of_indices + 6) * sizeof(unsigned int));
-
-                    Vertex v0, v1, v2, v3;
-
-                    v0 = (Vertex) {
+                if (z == CHUNK_SIZE - 1 || chunk->blocks[x][y][z + 1].type == AIR) {
+                    Vertex v0 = {
                         .position = {x - 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {0.0f, 0.0f, 1.0f},
                         .texture_coord = {1.0f, 0.0f}
                     };
-                    v1 = (Vertex) {
+                    Vertex v1 = {
                         .position = {x + 0.5f, y - 0.5f, z + 0.5f},
-                        .normal = {0.0f, 0.0f, -.0f},
+                        .normal = {0.0f, 0.0f, 1.0f},
                         .texture_coord = {0.0f, 0.0f}
                     };
-                    v2 = (Vertex) {
+                    Vertex v2 = {
                         .position = {x + 0.5f, y + 0.5f, z + 0.5f},
                         .normal = {0.0f, 0.0f, 1.0f},
                         .texture_coord = {0.0f, 1.0f}
                     };
-                    v3 = (Vertex) {
+                    Vertex v3 = {
                         .position = {x - 0.5f, y + 0.5f, z + 0.5f},
                         .normal = {0.0f, 0.0f, 1.0f},
                         .texture_coord = {1.0f, 1.0f}
@@ -244,28 +221,23 @@ void chunk_generate_mesh(Chunk* chunk) {
                 }
 
                 // generate left face
-                if (chunk->blocks[x][y][z].is_left_face_visable) {
-                    chunk->vertices = realloc(chunk->vertices, (chunk->number_of_vertices + 4) * sizeof(Vertex));
-                    chunk->indices = realloc(chunk->indices, (chunk->number_of_indices + 6) * sizeof(unsigned int));
-
-                    Vertex v0, v1, v2, v3;
-
-                    v0 = (Vertex) {
+                if (x == 0 || chunk->blocks[x - 1][y][z].type == AIR) {
+                    Vertex v0 = {
                         .position = {x - 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {-1.0f, 0.0f, 0.0f},
                         .texture_coord = {1.0f, 0.0f}
                     };
-                    v1 = (Vertex) {
+                    Vertex v1 = {
                         .position = {x - 0.5f, y - 0.5f, z - 0.5f},
                         .normal = {-1.0f, 0.0f, 0.0f},
                         .texture_coord = {0.0f, 0.0f}
                     };
-                    v2 = (Vertex) {
+                    Vertex v2 = {
                         .position = {x - 0.5f, y + 0.5f, z - 0.5f},
                         .normal = {-1.0f, 0.0f, 0.0f},
                         .texture_coord = {0.0f, 1.0f}
                     };
-                    v3 = (Vertex) {
+                    Vertex v3 = {
                         .position = {x - 0.5f, y + 0.5f, z + 0.5f},
                         .normal = {-1.0f, 0.0f, 0.0f},
                         .texture_coord = {1.0f, 1.0f}
@@ -287,28 +259,23 @@ void chunk_generate_mesh(Chunk* chunk) {
                 }
 
                 // generate right face
-                if (chunk->blocks[x][y][z].is_right_face_visable) {
-                    chunk->vertices = realloc(chunk->vertices, (chunk->number_of_vertices + 4) * sizeof(Vertex));
-                    chunk->indices = realloc(chunk->indices, (chunk->number_of_indices + 6) * sizeof(unsigned int));
-
-                    Vertex v0, v1, v2, v3;
-
-                    v0 = (Vertex) {
+                if (x == CHUNK_SIZE - 1 || chunk->blocks[x + 1][y][z].type == AIR) {
+                    Vertex v0 = {
                         .position = {x + 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {1.0f, 0.0f, 0.0f},
                         .texture_coord = {1.0f, 0.0f}
                     };
-                    v1 = (Vertex) {
+                    Vertex v1 = {
                         .position = {x + 0.5f, y - 0.5f, z - 0.5f},
                         .normal = {1.0f, 0.0f, 0.0f},
                         .texture_coord = {0.0f, 0.0f}
                     };
-                    v2 = (Vertex) {
+                    Vertex v2 = {
                         .position = {x + 0.5f, y + 0.5f, z - 0.5f},
                         .normal = {1.0f, 0.0f, 0.0f},
                         .texture_coord = {0.0f, 1.0f}
                     };
-                    v3 = (Vertex) {
+                    Vertex v3 = {
                         .position = {x + 0.5f, y + 0.5f, z + 0.5f},
                         .normal = {1.0f, 0.0f, 0.0f},
                         .texture_coord = {1.0f, 1.0f}
