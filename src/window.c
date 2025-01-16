@@ -33,7 +33,7 @@ Window window_create(int width, int height, const char* title) {
     }
 
     glfwMakeContextCurrent(window.glfw_window);
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         printf("ERROR: Failed to initialize GLAD\n");
@@ -51,6 +51,13 @@ Window window_create(int width, int height, const char* title) {
     glfwSetFramebufferSizeCallback(window.glfw_window, window_resize_callback);
     glfwSetInputMode(window.glfw_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
     glfwSetInputMode(window.glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    window.fps = 0.0f;
+    window.frame_time = 0.0f;
+    window.delta_time  = 0.0f;
+    window.frames = 0;
+
+    window.fps_calculation_rate = 5.0f; // five times per second
 
     return window;
 }
@@ -80,11 +87,23 @@ int window_get_height(Window* window) {
 }
 
 void window_update(Window* window) {
+    double current_time = glfwGetTime();
+    window->frame_time = current_time - window->fps_previous_time;
+    window->frames++;
+    window->fps_previous_time = current_time;
+
+    if (window->frame_time >= 1.0 / window->fps_calculation_rate) {
+        window->fps = window->frames / window->frame_time;
+        printf("FPS: %f\n", window->fps);
+        printf("Frame Time: %f\n", window->frame_time * 100.0f);
+        window->frames = 0;
+    }
+
     glfwPollEvents();
     glfwSwapBuffers(window->glfw_window);
 }
 
-void window_destory(Window* window) {
+void window_destroy(Window* window) {
     glfwDestroyWindow(window->glfw_window);
     glfwTerminate();
 }

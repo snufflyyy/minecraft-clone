@@ -15,7 +15,6 @@ typedef struct Chunk {
     int number_of_indices;
     
     unsigned int VAO, VBO, EBO;
-    Matrix4f model;
 } Chunk;
 
 Chunk chunk_create();

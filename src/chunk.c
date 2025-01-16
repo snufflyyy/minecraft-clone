@@ -12,12 +12,9 @@ Chunk chunk_create() {
     // temp until world generation is done
     // just setting all the blocks to grass for now
     for (int x = 0; x < CHUNK_SIZE; x++) {
-        for (int z = 0; z < CHUNK_SIZE; z++) {
-            int random_y = rand() % CHUNK_SIZE;
-            for (int y = 0; y < CHUNK_SIZE; y++) {
-                if (y <= random_y) {
-                    chunk.blocks[x][y][z].type = GRASS;
-                }
+        for (int y = 0; y < CHUNK_SIZE / 2; y++) {
+            for (int z = 0; z < CHUNK_SIZE; z++) {
+                chunk.blocks[x][y][z].type = GRASS;
             }
         }
     }
@@ -47,8 +44,6 @@ Chunk chunk_create() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-
-    chunk.model = matrix4f_identity();
 
     return chunk;
 }

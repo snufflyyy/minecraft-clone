@@ -1,10 +1,13 @@
 #pragma once
 
 #include "window.h"
+#include "world.h"
+#include "camera.h"
 
 typedef struct Game {
     Window window;
-
+    World world;
+    Fly_Camera fly_camera;
 } Game;
 
 Game game_create();

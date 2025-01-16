@@ -27,6 +27,8 @@ add_executable (
 	src/camera.c
 	src/block.c
 	src/chunk.c
+	src/world.c
+	src/game.c
 
 	src/math/matrix4f.c
 	src/math/vector3f.c
