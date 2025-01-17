@@ -86,7 +86,7 @@ void window_update(Window* window) {
     window->fps = 1.0f / window->delta_time;
     window->last_frame_time = current_time;
 
-    printf("FPS: %0.2f Frame Time: %0.2f\n", window->fps, window->frame_time);
+    //printf("FPS: %0.2f Frame Time: %0.2f\n", window->fps, window->frame_time);
 
     glfwPollEvents();
     glfwSwapBuffers(window->glfw_window);

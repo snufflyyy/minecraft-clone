@@ -18,6 +18,7 @@ typedef struct Chunk {
 } Chunk;
 
 Chunk chunk_create();
+void chunk_update(Chunk* chunk, Chunk* neighbors[6]);
 void chunk_generate_mesh(Chunk* chunk);
 void chunk_draw(Chunk* chunk);
-void chunk_destory(Chunk* chunk);
+void chunk_destroy(Chunk* chunk);

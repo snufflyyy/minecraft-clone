@@ -17,7 +17,47 @@ World world_create(int render_distance) {
     for (int x = 0; x < world.render_distance; x++) {
         for (int y = 0; y < world.render_distance; y++) {
             for (int z = 0; z < world.render_distance; z++) {
-                world.chunks[x * (render_distance * render_distance) + y * render_distance + z] = chunk_create();
+                world.chunks[x * (world.render_distance * world.render_distance) + y * world.render_distance + z] = chunk_create();
+            }
+        }
+    }
+
+    for (int x = 0; x < world.render_distance; x++) {
+        for (int y = 0; y < world.render_distance; y++) {
+            for (int z = 0; z < world.render_distance; z++) {
+                int current_index        = x * (world.render_distance * world.render_distance) + y * world.render_distance + z;
+                int top_chunk_index      = x * (world.render_distance * world.render_distance) + (y + 1) * world.render_distance + z;
+                int bottom_chunk_index   = x * (world.render_distance * world.render_distance) + (y - 1) * world.render_distance + z;
+                int left_chunk_index     = (x - 1) * (world.render_distance * world.render_distance) + y * world.render_distance + z;
+                int right_chunk_index    = (x + 1) * (world.render_distance * world.render_distance) + y * world.render_distance + z;
+                int forward_chunk_index  = x * (world.render_distance * world.render_distance) + y * world.render_distance + (z + 1);
+                int backward_chunk_index = x * (world.render_distance * world.render_distance) + y * world.render_distance + (z - 1);
+
+                Chunk* chunk_neighbours[6] = {NULL, NULL, NULL, NULL, NULL, NULL};
+
+                if (y != world.render_distance - 1) {
+                    chunk_neighbours[0] = &world.chunks[top_chunk_index];
+                }
+                if (y != 0) {
+                    chunk_neighbours[1] = &world.chunks[bottom_chunk_index];
+                }
+
+                if (x != 0) {
+                    chunk_neighbours[2] = &world.chunks[left_chunk_index];
+                }
+                if (x != world.render_distance - 1) {
+                    chunk_neighbours[3] = &world.chunks[right_chunk_index];
+                }
+
+                if (z != world.render_distance - 1) {
+                    chunk_neighbours[4] = &world.chunks[forward_chunk_index];
+                }
+                if (z != 0) {
+                    chunk_neighbours[5] = &world.chunks[backward_chunk_index];
+                }
+
+                chunk_update(&world.chunks[current_index], chunk_neighbours);
+                chunk_generate_mesh(&world.chunks[current_index]);
             }
         }
     }
@@ -59,7 +99,7 @@ void world_destory(World* world) {
     for (int x = 0; x < world->render_distance; x++) {
         for (int y = 0; y < world->render_distance; y++) {
             for (int z = 0; z < world->render_distance; z++) {
-                chunk_destory(&world->chunks[x * (world->render_distance * world->render_distance) + y * world->render_distance + z]);
+                chunk_destroy(&world->chunks[x * (world->render_distance * world->render_distance) + y * world->render_distance + z]);
             }
         }
     }
