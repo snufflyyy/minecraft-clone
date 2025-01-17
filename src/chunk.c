@@ -12,9 +12,9 @@ Chunk chunk_create() {
     // temp until world generation is done
     // just setting all the blocks to grass for now
     for (int x = 0; x < CHUNK_SIZE; x++) {
-        for (int y = 0; y < CHUNK_SIZE / 2; y++) {
+        for (int y = 0; y < CHUNK_SIZE; y++) {
             for (int z = 0; z < CHUNK_SIZE; z++) {
-                chunk.blocks[x][y][z].type = GRASS;
+                chunk.blocks[x * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + z].type = GRASS;
             }
         }
     }
@@ -61,10 +61,10 @@ void chunk_generate_mesh(Chunk* chunk) {
     for (int x = 0; x < CHUNK_SIZE; x++) {
         for (int y = 0; y < CHUNK_SIZE; y++) {
             for (int z = 0; z < CHUNK_SIZE; z++) {
-                if (chunk->blocks[x][y][z].type == AIR) { continue; }
+                if (chunk->blocks[x * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + z].type == AIR) { continue; }
 
                 // generate top face
-                if (y == CHUNK_SIZE - 1 || chunk->blocks[x][y + 1][z].type == AIR) {
+                if (y == CHUNK_SIZE - 1 || chunk->blocks[x * (CHUNK_SIZE * CHUNK_SIZE) + (y + 1) * CHUNK_SIZE + z].type == AIR) {
                     Vertex v0 = {
                         .position = {x - 0.5f, y + 0.5f, z + 0.5f},
                         .normal = {0.0f, 1.0f, 0.0f},
@@ -102,7 +102,7 @@ void chunk_generate_mesh(Chunk* chunk) {
                 }
 
                 // generate bottom face
-                if (y == 0 || chunk->blocks[x][y - 1][z].type == AIR) {
+                if (y == 0 || chunk->blocks[x * (CHUNK_SIZE * CHUNK_SIZE) + (y - 1) * CHUNK_SIZE + z].type == AIR) {
                     Vertex v0 = {
                         .position = {x - 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {0.0f, -1.0f, 0.0f},
@@ -140,7 +140,7 @@ void chunk_generate_mesh(Chunk* chunk) {
                 }
 
                 // generate forward face
-                if (z == 0 || chunk->blocks[x][y][z - 1].type == AIR) {
+                if (z == 0 || chunk->blocks[x * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + (z - 1)].type == AIR) {
                     Vertex v0 = {
                         .position = {x - 0.5f, y - 0.5f, z - 0.5f},
                         .normal = {0.0f, 0.0f, -1.0f},
@@ -178,7 +178,7 @@ void chunk_generate_mesh(Chunk* chunk) {
                 }
 
                 // generate backward face
-                if (z == CHUNK_SIZE - 1 || chunk->blocks[x][y][z + 1].type == AIR) {
+                if (z == CHUNK_SIZE - 1 || chunk->blocks[x * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + (z + 1)].type == AIR) {
                     Vertex v0 = {
                         .position = {x - 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {0.0f, 0.0f, 1.0f},
@@ -216,7 +216,7 @@ void chunk_generate_mesh(Chunk* chunk) {
                 }
 
                 // generate left face
-                if (x == 0 || chunk->blocks[x - 1][y][z].type == AIR) {
+                if (x == 0 || chunk->blocks[(x - 1) * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + z].type == AIR) {
                     Vertex v0 = {
                         .position = {x - 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {-1.0f, 0.0f, 0.0f},
@@ -254,7 +254,7 @@ void chunk_generate_mesh(Chunk* chunk) {
                 }
 
                 // generate right face
-                if (x == CHUNK_SIZE - 1 || chunk->blocks[x + 1][y][z].type == AIR) {
+                if (x == CHUNK_SIZE - 1 || chunk->blocks[(x + 1) * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + z].type == AIR) {
                     Vertex v0 = {
                         .position = {x + 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {1.0f, 0.0f, 0.0f},
@@ -301,11 +301,13 @@ void chunk_draw(Chunk* chunk) {
     glDrawElements(GL_TRIANGLES, chunk->number_of_indices, GL_UNSIGNED_INT, 0);
 }
 
-void chunk_delete(Chunk* chunk) {
+void chunk_destory(Chunk* chunk) {
     free(chunk->indices);
+    chunk->indices = NULL;
     free(chunk->vertices);
-
-    glDeleteBuffers(1, &chunk->VBO);
+    chunk->vertices = NULL;
+    
     glDeleteBuffers(1, &chunk->EBO);
+    glDeleteBuffers(1, &chunk->VBO);
     glDeleteVertexArrays(1, &chunk->VAO);
 }

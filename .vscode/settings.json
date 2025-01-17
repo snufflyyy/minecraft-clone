@@ -3,6 +3,7 @@
         "xutility": "c",
         "__node_handle": "c",
         "stdlib.h": "c",
-        "stddef.h": "c"
+        "stddef.h": "c",
+        "camera.h": "c"
     }
 }

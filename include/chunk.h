@@ -7,7 +7,7 @@
 #include "math/matrix4f.h"
 
 typedef struct Chunk {
-    Block blocks[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+    Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 
     Vertex* vertices;
     int number_of_vertices;
@@ -20,3 +20,4 @@ typedef struct Chunk {
 Chunk chunk_create();
 void chunk_generate_mesh(Chunk* chunk);
 void chunk_draw(Chunk* chunk);
+void chunk_destory(Chunk* chunk);

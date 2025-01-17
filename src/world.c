@@ -11,18 +11,13 @@ World world_create(int render_distance) {
 
     world.render_distance = render_distance;
 
-    world.chunks = malloc(world.render_distance * sizeof(Chunk**));
-    for (int x = 0; x < world.render_distance; x++) {
-        world.chunks[x] = malloc(world.render_distance * sizeof(Chunk*));
-        for (int y = 0; y < world.render_distance; y++) {
-            world.chunks[x][y] = malloc(world.render_distance * sizeof(Chunk));
-        }
-    }
+    int chunk_count = world.render_distance * world.render_distance * world.render_distance;
+    world.chunks = malloc(chunk_count * sizeof(Chunk));
 
     for (int x = 0; x < world.render_distance; x++) {
-        for (int y = 0; y < render_distance; y++) {
-            for (int z = 0; z < render_distance; z++) {
-                world.chunks[x][y][z] = chunk_create();
+        for (int y = 0; y < world.render_distance; y++) {
+            for (int z = 0; z < world.render_distance; z++) {
+                world.chunks[x * (render_distance * render_distance) + y * render_distance + z] = chunk_create();
             }
         }
     }
@@ -51,12 +46,21 @@ void world_draw(World* world, Fly_Camera* camera) {
                 glUniformMatrix4fv(glGetUniformLocation(world->shader.id, "projection"), 1, GL_FALSE, camera->projection.values);
 
                 texture_bind(&world->texture_atlas);
-                chunk_draw(&world->chunks[x][y][z]);
+                chunk_draw(&world->chunks[x * (world->render_distance * world->render_distance) + y * world->render_distance + z]);
             }
         }
     }
 }
 
-void world_delete(World* world) {
+void world_destory(World* world) {
+    texture_delete(&world->texture_atlas);
+    shader_delete(&world->shader);
 
+    for (int x = 0; x < world->render_distance; x++) {
+        for (int y = 0; y < world->render_distance; y++) {
+            for (int z = 0; z < world->render_distance; z++) {
+                chunk_destory(&world->chunks[x * (world->render_distance * world->render_distance) + y * world->render_distance + z]);
+            }
+        }
+    }
 }

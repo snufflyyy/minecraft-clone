@@ -9,7 +9,7 @@
 typedef struct World {
     int render_distance;
 
-    Chunk*** chunks;
+    Chunk* chunks;
     Matrix4f model;
 
     Shader shader;
@@ -19,4 +19,4 @@ typedef struct World {
 World world_create(int render_distance);
 void world_update(World* world);
 void world_draw(World* world, Fly_Camera* camera);
-void world_delete(World* world);
+void world_destory(World* world);

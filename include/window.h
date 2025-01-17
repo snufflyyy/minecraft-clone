@@ -9,12 +9,9 @@ typedef struct Window {
     GLFWwindow* glfw_window;
 
     float fps;
-    double frame_time;
-    double delta_time;
-    unsigned int frames;
-
-    float fps_calculation_rate;
-    double fps_previous_time;
+    float frame_time;
+    float delta_time;
+    float last_frame_time;
 
     bool just_resized;
 } Window;
