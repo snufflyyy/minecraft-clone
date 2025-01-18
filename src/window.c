@@ -1,7 +1,7 @@
 #include "window.h"
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 
 #include <glad/glad.h>
@@ -51,6 +51,12 @@ Window window_create(int width, int height, const char* title) {
     glfwSetFramebufferSizeCallback(window.glfw_window, window_resize_callback);
     glfwSetInputMode(window.glfw_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
     glfwSetInputMode(window.glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    
+    window.fps = 0.0f;
+    window.frame_time = 0.0f;
+    window.delta_time = 0.0f;
+    window.last_frame_time = 0.0f;
+    window.last_fps_print_time = 0.0f;
 
     return window;
 }
@@ -86,7 +92,10 @@ void window_update(Window* window) {
     window->fps = 1.0f / window->delta_time;
     window->last_frame_time = current_time;
 
-    //printf("FPS: %0.2f Frame Time: %0.2f\n", window->fps, window->frame_time);
+    if (current_time - window->last_fps_print_time >= 1.0f / 10.0f) {
+        printf("FPS: %0.2f Frame Time: %0.2f\n", window->fps, window->frame_time);
+        window->last_fps_print_time = current_time;
+    }
 
     glfwPollEvents();
     glfwSwapBuffers(window->glfw_window);

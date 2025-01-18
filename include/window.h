@@ -12,6 +12,7 @@ typedef struct Window {
     float frame_time;
     float delta_time;
     float last_frame_time;
+    float last_fps_print_time;
 
     bool just_resized;
 } Window;

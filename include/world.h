@@ -13,6 +13,10 @@ typedef struct World {
     Matrix4f model;
 
     Shader shader;
+    int model_uniform_location;
+    int view_uniform_location;
+    int projection_uniform_location;
+
     Texture texture_atlas;
 } World;
 

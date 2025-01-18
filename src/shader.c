@@ -53,6 +53,7 @@ static const char* file_to_string(const char* file_path) {
     FILE* file = fopen(file_path, "r");
     if (!file) {
         printf("ERROR: Failed to open vertex shader source!\n");
+        exit(-4);
     }
 
     fseek(file, 0, SEEK_END);
@@ -62,6 +63,7 @@ static const char* file_to_string(const char* file_path) {
     char* string = malloc(length + 1); // + 1 bc null terminator
     if (!string) {
         printf("ERROR: Failed to allocate memory for string!\n");
+        exit(-5);
     }
 
     unsigned int bytes_read = fread(string, 1, length, file);

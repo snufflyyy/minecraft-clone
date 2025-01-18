@@ -19,6 +19,10 @@ Chunk chunk_create() {
         }
     }
 
+    glGenVertexArrays(1, &chunk.VAO);
+    glGenBuffers(1, &chunk.VBO);
+    glGenBuffers(1, &chunk.EBO);
+
     return chunk;
 }
 
@@ -30,17 +34,17 @@ void chunk_update(Chunk* chunk, Chunk* neighbors[6]) {
         for (int y = 0; y < CHUNK_SIZE; y++) {
             for (int z = 0; z < CHUNK_SIZE; z++) {
                 // in current chunk
-                int current_index      = x * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + z;
-                int top_index          = x * (CHUNK_SIZE * CHUNK_SIZE) + (y + 1) * CHUNK_SIZE + z;
-                int bottom_index       = x * (CHUNK_SIZE * CHUNK_SIZE) + (y - 1) * CHUNK_SIZE + z;
-                int left_index         = (x - 1) * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + z;
-                int right_index        = (x + 1) * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + z;
-                int forward_index      = x * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + (z + 1);
-                int backward_index     = x * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + (z - 1);
+                int current_index = x * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + z;
+                int above_index   = x * (CHUNK_SIZE * CHUNK_SIZE) + (y + 1) * CHUNK_SIZE + z;
+                int below_index   = x * (CHUNK_SIZE * CHUNK_SIZE) + (y - 1) * CHUNK_SIZE + z;
+                int left_index    = (x - 1) * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + z;
+                int right_index   = (x + 1) * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + z;
+                int infront_index = x * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + (z + 1);
+                int behind_index  = x * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + (z - 1);
 
                 // neighboring chunks
-                int top_neighbour      = x * (CHUNK_SIZE * CHUNK_SIZE) + 0 * CHUNK_SIZE + z;
-                int bottom_neighbour   = x * (CHUNK_SIZE * CHUNK_SIZE) + (CHUNK_SIZE - 1) * CHUNK_SIZE + z;
+                int top_neighbour      = x * (CHUNK_SIZE * CHUNK_SIZE) + (CHUNK_SIZE - 1) * CHUNK_SIZE + z;
+                int bottom_neighbour   = x * (CHUNK_SIZE * CHUNK_SIZE) + 0 * CHUNK_SIZE + z;
                 int left_neighbour     = 0 * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + z;
                 int right_neighbour    = (CHUNK_SIZE - 1) * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + z;
                 int forward_neighbour  = x * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + (CHUNK_SIZE - 1);
@@ -49,127 +53,73 @@ void chunk_update(Chunk* chunk, Chunk* neighbors[6]) {
                 // if current block is air just skip it
                 if (chunk->blocks[current_index].type == AIR) { continue; }
 
-                if (y == CHUNK_SIZE - 1 && neighbors[0]) {
-                    if (neighbors[0]->blocks[top_neighbour].type == AIR) {
-                        chunk->blocks[current_index].is_top_face_visible = true;
-                        chunk->number_of_vertices += 4;
-                        chunk->number_of_indices += 6;
-                    }
+                bool visible = false;
+
+                // top face
+                if (y == CHUNK_SIZE - 1) {
+                    visible = neighbors[0] ? neighbors[0]->blocks[bottom_neighbour].type == AIR : true;
                 } else {
-                    if (chunk->blocks[top_index].type == AIR) {
-                        chunk->blocks[current_index].is_top_face_visible = true;
-                        chunk->number_of_vertices += 4;
-                        chunk->number_of_indices += 6;
-                    }
+                    visible = chunk->blocks[above_index].type == AIR;
                 }
+                chunk->number_of_vertices += visible ? 4 : 0;
+                chunk->number_of_indices += visible ? 6 : 0;
+                chunk->blocks[current_index].is_top_face_visible = visible;
+                visible = false;
 
-                if (y == 0 && neighbors[1]) {
-                    if (neighbors[1]->blocks[bottom_neighbour].type == AIR) {
-                        chunk->blocks[current_index].is_bottom_face_visible = true;
-                        chunk->number_of_vertices += 4;
-                        chunk->number_of_indices += 6;
-                    }
+                // bottom face
+                if (y == 0) {
+                    visible = neighbors[1] ? neighbors[1]->blocks[top_neighbour].type == AIR : true;
                 } else {
-                    if (chunk->blocks[bottom_index].type == AIR) {
-                        chunk->blocks[current_index].is_bottom_face_visible = true;
-                        chunk->number_of_vertices += 4;
-                        chunk->number_of_indices += 6;
-                    }
+                    visible = chunk->blocks[below_index].type == AIR;
                 }
+                chunk->number_of_vertices += visible ? 4 : 0;
+                chunk->number_of_indices += visible ? 6 : 0;
+                chunk->blocks[current_index].is_bottom_face_visible = visible;
+                visible = false;
 
-                if (x == 0 && neighbors[2]) {
-                    if (neighbors[2]->blocks[left_neighbour].type == AIR) {
-                        chunk->blocks[current_index].is_left_face_visible = true;
-                        chunk->number_of_vertices += 4;
-                        chunk->number_of_indices += 6;
-                    }
+                // left face
+                if (x == 0) {
+                    visible = neighbors[2] ? neighbors[2]->blocks[right_neighbour].type == AIR : true;
                 } else {
-                    if (chunk->blocks[left_index].type == AIR) {
-                        chunk->blocks[current_index].is_left_face_visible = true;
-                        chunk->number_of_vertices += 4;
-                        chunk->number_of_indices += 6;
-                    }
+                    visible = chunk->blocks[left_index].type == AIR;
                 }
+                chunk->number_of_vertices += visible ? 4 : 0;
+                chunk->number_of_indices += visible ? 6 : 0;
+                chunk->blocks[current_index].is_left_face_visible = visible;
+                visible = false;
 
-                if (x == CHUNK_SIZE - 1 && neighbors[3]) {
-                    if (neighbors[3]->blocks[right_neighbour].type == AIR) {
-                        chunk->blocks[current_index].is_right_face_visible = true;
-                        chunk->number_of_vertices += 4;
-                        chunk->number_of_indices += 6;
-                    }
+                // right face
+                if (x == CHUNK_SIZE - 1) {
+                    visible = neighbors[3] ? neighbors[3]->blocks[left_neighbour].type == AIR : true;
                 } else {
-                    if (chunk->blocks[right_index].type == AIR) {
-                        chunk->blocks[current_index].is_right_face_visible = true;
-                        chunk->number_of_vertices += 4;
-                        chunk->number_of_indices += 6;
-                    }
+                    visible = chunk->blocks[right_index].type == AIR;
                 }
+                chunk->number_of_vertices += visible ? 4 : 0;
+                chunk->number_of_indices += visible ? 6 : 0;
+                chunk->blocks[current_index].is_right_face_visible = visible;
+                visible = false;
 
-                if (z == 0 && neighbors[4]) {
-                    if (neighbors[4]->blocks[forward_neighbour].type == AIR) {
-                        chunk->blocks[current_index].is_forward_face_visible = true;
-                        chunk->number_of_vertices += 4;
-                        chunk->number_of_indices += 6;
-                    }
+                // forward face
+                if (z == CHUNK_SIZE - 1) {
+                    visible = neighbors[4] ? neighbors[4]->blocks[backward_neighbour].type == AIR : true;
                 } else {
-                    if (chunk->blocks[forward_index].type == AIR) {
-                        chunk->blocks[current_index].is_forward_face_visible = true;
-                        chunk->number_of_vertices += 4;
-                        chunk->number_of_indices += 6;
-                    }
+                    visible = chunk->blocks[infront_index].type == AIR;
                 }
+                chunk->number_of_vertices += visible ? 4 : 0;
+                chunk->number_of_indices += visible ? 6 : 0;
+                chunk->blocks[current_index].is_forward_face_visible = visible;
+                visible = false;
 
-                if (z == CHUNK_SIZE - 1 && neighbors[5]) {
-                    if (neighbors[5]->blocks[backward_neighbour].type == AIR) {
-                        chunk->blocks[current_index].is_backward_face_visible = true;
-                        chunk->number_of_vertices += 4;
-                        chunk->number_of_indices += 6;
-                    }
+                // backward face
+                if (z == 0) {
+                    visible = neighbors[5] ? neighbors[5]->blocks[forward_neighbour].type == AIR : true;
                 } else {
-                    if (chunk->blocks[backward_index].type == AIR) {
-                        chunk->blocks[current_index].is_backward_face_visible = true;
-                        chunk->number_of_vertices += 4;
-                        chunk->number_of_indices += 6;
-                    }
+                    visible = chunk->blocks[backward_neighbour].type == AIR;
                 }
-
-
-                /*
-                if ((neighbors[0] != NULL && neighbors[0]->blocks[top_neighbour].type == AIR) || chunk->blocks[top_index].type == AIR) {
-                    chunk->blocks[current_index].is_top_face_visible = true;
-                    chunk->number_of_vertices += 4;
-                    chunk->number_of_indices += 6;
-                }
-                if ((neighbors[1] != NULL && neighbors[1]->blocks[bottom_neighbour].type == AIR) || chunk->blocks[bottom_index].type == AIR) {
-                    chunk->blocks[current_index].is_bottom_face_visible = true;
-                    chunk->number_of_vertices += 4;
-                    chunk->number_of_indices += 6;
-                }
-
-                // check the left and right faces
-                if ((neighbors[2] != NULL && neighbors[2]->blocks[left_neighbour].type == AIR) || chunk->blocks[left_index].type == AIR) {
-                    chunk->blocks[current_index].is_left_face_visible = true;
-                    chunk->number_of_vertices += 4;
-                    chunk->number_of_indices += 6;
-                }
-                if ((neighbors[3] != NULL && neighbors[3]->blocks[right_neighbour].type == AIR) || chunk->blocks[right_index].type == AIR) {
-                    chunk->blocks[current_index].is_right_face_visible = true;
-                    chunk->number_of_vertices += 4;
-                    chunk->number_of_indices += 6;
-                }
-
-                // check the forward and backward faces
-                if ((neighbors[4] != NULL && neighbors[4]->blocks[forward_neighbour].type == AIR) || chunk->blocks[forward_index].type == AIR) {
-                    chunk->blocks[current_index].is_forward_face_visible = true;
-                    chunk->number_of_vertices += 4;
-                    chunk->number_of_indices += 6;
-                }
-                if ((neighbors[5] != NULL && neighbors[5]->blocks[backward_neighbour].type == AIR) || chunk->blocks[backward_index].type == AIR) {
-                    chunk->blocks[current_index].is_backward_face_visible = true;
-                    chunk->number_of_vertices += 4;
-                    chunk->number_of_indices += 6;
-                }
-                */
+                chunk->number_of_vertices += visible ? 4 : 0;
+                chunk->number_of_indices += visible ? 6 : 0;
+                chunk->blocks[current_index].is_backward_face_visible = visible;
+                visible = false;
             }
         }
     }
@@ -177,7 +127,15 @@ void chunk_update(Chunk* chunk, Chunk* neighbors[6]) {
 
 void chunk_generate_mesh(Chunk* chunk) {
     chunk->vertices = malloc(chunk->number_of_vertices * sizeof(Vertex));
+    if (!chunk->vertices) {
+        printf("ERROR: Failed to allocate memory for chunk vertices!");
+        exit(-6);
+    }
     chunk->indices = malloc(chunk->number_of_indices * sizeof(unsigned int));
+    if (!chunk->indices) {
+        printf("ERROR: Failed to allocate memory for chunk indices!");
+        exit(-7);
+    }
 
     chunk->number_of_vertices = 0;
     chunk->number_of_indices = 0;
@@ -192,37 +150,34 @@ void chunk_generate_mesh(Chunk* chunk) {
 
                 // generate top face
                 if (chunk->blocks[current_index].is_top_face_visible) {
-                    Vertex v0 = {
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y + 0.5f, z + 0.5f},
                         .normal = {0.0f, 1.0f, 0.0f},
                         .texture_coord = {1.0f, 0.0f}
                     };
-                    Vertex v1 = {
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y + 0.5f, z + 0.5f},
                         .normal = {0.0f, 1.0f, 0.0f},
                         .texture_coord = {0.0f, 0.0f}
                     };
-                    Vertex v2 = {
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y + 0.5f, z - 0.5f},
                         .normal = {0.0f, 1.0f, 0.0f},
                         .texture_coord = {0.0f, 1.0f}
-                    };
-                    Vertex v3 = {
+                    };        
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y + 0.5f, z - 0.5f},
                         .normal = {0.0f, 1.0f, 0.0f},
                         .texture_coord = {1.0f, 1.0f}
-                    };
-
-                    chunk->vertices[chunk->number_of_vertices++] = v0;
-                    chunk->vertices[chunk->number_of_vertices++] = v1;
-                    chunk->vertices[chunk->number_of_vertices++] = v2;
-                    chunk->vertices[chunk->number_of_vertices++] = v3;
+                    }; 
 
                     unsigned int base_index = chunk->number_of_vertices - 4;
+                    // first triangle
                     chunk->indices[chunk->number_of_indices++] = base_index;
                     chunk->indices[chunk->number_of_indices++] = base_index + 1;
                     chunk->indices[chunk->number_of_indices++] = base_index + 2;
 
+                    // second triangle
                     chunk->indices[chunk->number_of_indices++] = base_index;
                     chunk->indices[chunk->number_of_indices++] = base_index + 2;
                     chunk->indices[chunk->number_of_indices++] = base_index + 3;
@@ -230,37 +185,34 @@ void chunk_generate_mesh(Chunk* chunk) {
 
                 // generate bottom face
                 if (chunk->blocks[current_index].is_bottom_face_visible) {
-                    Vertex v0 = {
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {0.0f, -1.0f, 0.0f},
                         .texture_coord = {1.0f, 0.0f}
                     };
-                    Vertex v1 = {
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {0.0f, -1.0f, 0.0f},
                         .texture_coord = {0.0f, 0.0f}
                     };
-                    Vertex v2 = {
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y - 0.5f, z - 0.5f},
                         .normal = {0.0f, -1.0f, 0.0f},
                         .texture_coord = {0.0f, 1.0f}
                     };
-                    Vertex v3 = {
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y - 0.5f, z - 0.5f},
                         .normal = {0.0f, -1.0f, 0.0f},
                         .texture_coord = {1.0f, 1.0f}
                     };
 
-                    chunk->vertices[chunk->number_of_vertices++] = v0;
-                    chunk->vertices[chunk->number_of_vertices++] = v1;
-                    chunk->vertices[chunk->number_of_vertices++] = v2;
-                    chunk->vertices[chunk->number_of_vertices++] = v3;
-
                     unsigned int base_index = chunk->number_of_vertices - 4;
+                    // first triangle
                     chunk->indices[chunk->number_of_indices++] = base_index;
                     chunk->indices[chunk->number_of_indices++] = base_index + 2;
                     chunk->indices[chunk->number_of_indices++] = base_index + 1;
-
+                    
+                    // second triangle
                     chunk->indices[chunk->number_of_indices++] = base_index;
                     chunk->indices[chunk->number_of_indices++] = base_index + 3;
                     chunk->indices[chunk->number_of_indices++] = base_index + 2;
@@ -268,37 +220,34 @@ void chunk_generate_mesh(Chunk* chunk) {
 
                 // generate left face
                 if (chunk->blocks[current_index].is_left_face_visible) {
-                    Vertex v0 = {
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {-1.0f, 0.0f, 0.0f},
                         .texture_coord = {1.0f, 0.0f}
                     };
-                    Vertex v1 = {
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y - 0.5f, z - 0.5f},
                         .normal = {-1.0f, 0.0f, 0.0f},
                         .texture_coord = {0.0f, 0.0f}
                     };
-                    Vertex v2 = {
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y + 0.5f, z - 0.5f},
                         .normal = {-1.0f, 0.0f, 0.0f},
                         .texture_coord = {0.0f, 1.0f}
                     };
-                    Vertex v3 = {
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y + 0.5f, z + 0.5f},
                         .normal = {-1.0f, 0.0f, 0.0f},
                         .texture_coord = {1.0f, 1.0f}
                     };
 
-                    chunk->vertices[chunk->number_of_vertices++] = v0;
-                    chunk->vertices[chunk->number_of_vertices++] = v1;
-                    chunk->vertices[chunk->number_of_vertices++] = v2;
-                    chunk->vertices[chunk->number_of_vertices++] = v3;
-
                     unsigned int base_index = chunk->number_of_vertices - 4;
+                    // first triangle
                     chunk->indices[chunk->number_of_indices++] = base_index;
                     chunk->indices[chunk->number_of_indices++] = base_index + 2;
                     chunk->indices[chunk->number_of_indices++] = base_index + 1;
 
+                    // second triangle
                     chunk->indices[chunk->number_of_indices++] = base_index;
                     chunk->indices[chunk->number_of_indices++] = base_index + 3;
                     chunk->indices[chunk->number_of_indices++] = base_index + 2;
@@ -306,37 +255,34 @@ void chunk_generate_mesh(Chunk* chunk) {
 
                 // generate right face
                 if (chunk->blocks[current_index].is_right_face_visible) {
-                    Vertex v0 = {
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {1.0f, 0.0f, 0.0f},
                         .texture_coord = {1.0f, 0.0f}
                     };
-                    Vertex v1 = {
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y - 0.5f, z - 0.5f},
                         .normal = {1.0f, 0.0f, 0.0f},
                         .texture_coord = {0.0f, 0.0f}
                     };
-                    Vertex v2 = {
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y + 0.5f, z - 0.5f},
                         .normal = {1.0f, 0.0f, 0.0f},
                         .texture_coord = {0.0f, 1.0f}
                     };
-                    Vertex v3 = {
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y + 0.5f, z + 0.5f},
                         .normal = {1.0f, 0.0f, 0.0f},
                         .texture_coord = {1.0f, 1.0f}
                     };
 
-                    chunk->vertices[chunk->number_of_vertices++] = v0;
-                    chunk->vertices[chunk->number_of_vertices++] = v1;
-                    chunk->vertices[chunk->number_of_vertices++] = v2;
-                    chunk->vertices[chunk->number_of_vertices++] = v3;
-
                     unsigned int base_index = chunk->number_of_vertices - 4;
+                    // first triangle
                     chunk->indices[chunk->number_of_indices++] = base_index;
                     chunk->indices[chunk->number_of_indices++] = base_index + 1;
                     chunk->indices[chunk->number_of_indices++] = base_index + 2;
 
+                    // second triangle
                     chunk->indices[chunk->number_of_indices++] = base_index;
                     chunk->indices[chunk->number_of_indices++] = base_index + 2;
                     chunk->indices[chunk->number_of_indices++] = base_index + 3;
@@ -344,91 +290,82 @@ void chunk_generate_mesh(Chunk* chunk) {
 
                 // generate forward face
                 if (chunk->blocks[current_index].is_forward_face_visible) {
-                    Vertex v0 = {
-                        .position = {x - 0.5f, y - 0.5f, z - 0.5f},
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
+                        .position = {x - 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {0.0f, 0.0f, -1.0f},
                         .texture_coord = {1.0f, 0.0f}
                     };
-                    Vertex v1 = {
-                        .position = {x + 0.5f, y - 0.5f, z - 0.5f},
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
+                        .position = {x + 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {0.0f, 0.0f, -1.0f},
                         .texture_coord = {0.0f, 0.0f}
                     };
-                    Vertex v2 = {
-                        .position = {x + 0.5f, y + 0.5f, z - 0.5f},
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
+                        .position = {x + 0.5f, y + 0.5f, z + 0.5f},
                         .normal = {0.0f, 0.0f, -1.0f},
                         .texture_coord = {0.0f, 1.0f}
                     };
-                    Vertex v3 = {
-                        .position = {x - 0.5f, y + 0.5f, z - 0.5f},
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
+                        .position = {x - 0.5f, y + 0.5f, z + 0.5f},
                         .normal = {0.0f, 0.0f, -1.0f},
                         .texture_coord = {1.0f, 1.0f}
                     };
 
-                    chunk->vertices[chunk->number_of_vertices++] = v0;
-                    chunk->vertices[chunk->number_of_vertices++] = v1;
-                    chunk->vertices[chunk->number_of_vertices++] = v2;
-                    chunk->vertices[chunk->number_of_vertices++] = v3;
-
                     unsigned int base_index = chunk->number_of_vertices - 4;
+                    // first triangle
                     chunk->indices[chunk->number_of_indices++] = base_index;
-                    chunk->indices[chunk->number_of_indices++] = base_index + 2;
                     chunk->indices[chunk->number_of_indices++] = base_index + 1;
-
-                    chunk->indices[chunk->number_of_indices++] = base_index;
-                    chunk->indices[chunk->number_of_indices++] = base_index + 3;
                     chunk->indices[chunk->number_of_indices++] = base_index + 2;
+
+                    // second triangle
+                    chunk->indices[chunk->number_of_indices++] = base_index;
+                    chunk->indices[chunk->number_of_indices++] = base_index + 2;
+                    chunk->indices[chunk->number_of_indices++] = base_index + 3;
                 }
 
                 // generate backward face
                 if (chunk->blocks[current_index].is_backward_face_visible) {
-                    Vertex v0 = {
-                        .position = {x - 0.5f, y - 0.5f, z + 0.5f},
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
+                        .position = {x - 0.5f, y - 0.5f, z - 0.5f},
                         .normal = {0.0f, 0.0f, 1.0f},
                         .texture_coord = {1.0f, 0.0f}
                     };
-                    Vertex v1 = {
-                        .position = {x + 0.5f, y - 0.5f, z + 0.5f},
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
+                        .position = {x + 0.5f, y - 0.5f, z - 0.5f},
                         .normal = {0.0f, 0.0f, 1.0f},
                         .texture_coord = {0.0f, 0.0f}
                     };
-                    Vertex v2 = {
-                        .position = {x + 0.5f, y + 0.5f, z + 0.5f},
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
+                        .position = {x + 0.5f, y + 0.5f, z - 0.5f},
                         .normal = {0.0f, 0.0f, 1.0f},
                         .texture_coord = {0.0f, 1.0f}
                     };
-                    Vertex v3 = {
-                        .position = {x - 0.5f, y + 0.5f, z + 0.5f},
+                    chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
+                        .position = {x - 0.5f, y + 0.5f, z - 0.5f},
                         .normal = {0.0f, 0.0f, 1.0f},
                         .texture_coord = {1.0f, 1.0f}
                     };
 
-                    chunk->vertices[chunk->number_of_vertices++] = v0;
-                    chunk->vertices[chunk->number_of_vertices++] = v1;
-                    chunk->vertices[chunk->number_of_vertices++] = v2;
-                    chunk->vertices[chunk->number_of_vertices++] = v3;
-
                     unsigned int base_index = chunk->number_of_vertices - 4;
+                    // first triangle
                     chunk->indices[chunk->number_of_indices++] = base_index;
+                    chunk->indices[chunk->number_of_indices++] = base_index + 2;
                     chunk->indices[chunk->number_of_indices++] = base_index + 1;
-                    chunk->indices[chunk->number_of_indices++] = base_index + 2;
 
+                    // second triangle
                     chunk->indices[chunk->number_of_indices++] = base_index;
-                    chunk->indices[chunk->number_of_indices++] = base_index + 2;
                     chunk->indices[chunk->number_of_indices++] = base_index + 3;
+                    chunk->indices[chunk->number_of_indices++] = base_index + 2;
                 }
             }
         }
     }
 
-    glGenVertexArrays(1, &chunk->VAO);
     glBindVertexArray(chunk->VAO);
 
-    glGenBuffers(1, &chunk->VBO);
     glBindBuffer(GL_ARRAY_BUFFER, chunk->VBO);
     glBufferData(GL_ARRAY_BUFFER, chunk->number_of_vertices * sizeof(Vertex), chunk->vertices, GL_STATIC_DRAW);
 
-    glGenBuffers(1, &chunk->EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk->EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk->number_of_indices * sizeof(unsigned int), chunk->indices, GL_STATIC_DRAW);
 

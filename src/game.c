@@ -7,7 +7,7 @@ Game game_create() {
     Game game = {0};
 
     game.window = window_create(1280, 720, "minecraft");
-    game.world = world_create(2);
+    game.world = world_create(12);
     game.fly_camera = fly_camera_create(window_get_width(&game.window), window_get_height(&game.window));
 
     return game;
