@@ -1,6 +1,6 @@
 #pragma once
 
-#define CHUNK_SIZE 16
+#define CHUNK_SIZE 32
 
 #include "block.h"
 #include "vertex.h"
