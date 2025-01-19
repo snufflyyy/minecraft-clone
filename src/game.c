@@ -1,7 +1,10 @@
 #include "game.h"
 
+#include <stdio.h>
+
 #include "window.h"
 #include "camera.h"
+#include "math/noise.h"
 
 Game game_create() {
     Game game = {0};
@@ -11,6 +14,16 @@ Game game_create() {
     game.fly_camera = fly_camera_create(window_get_width(&game.window), window_get_height(&game.window));
 
     game.fly_camera.position.y = (game.world.render_distance / 2.0f * CHUNK_SIZE) + 1.0f;
+
+    for (float z = 0; z < 1; z += 0.1f) {
+        for (float y = 0; y < 1; y += 0.1f) {
+            for (float x = 0; x < 1; x += 0.1f) {
+                printf("%f ", perlin_noise(x, y, z));
+            }
+            printf("\n");
+        }
+        printf("\n");
+    }
 
     return game;
 }

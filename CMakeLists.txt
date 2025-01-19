@@ -32,6 +32,7 @@ add_executable (
 
 	src/math/matrix4f.c
 	src/math/vector3f.c
+	src/math/noise.c
 
 	external/glad/src/glad.c
 )
