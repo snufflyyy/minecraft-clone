@@ -7,4 +7,5 @@ typedef struct Vertex {
     Vector3f position;
     Vector3f normal;
     Vector2f texture_coord;
+    int texture_index;
 } Vertex;

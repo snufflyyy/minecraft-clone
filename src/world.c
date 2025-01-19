@@ -74,13 +74,13 @@ World world_create(int render_distance) {
     world.view_uniform_location = glGetUniformLocation(world.shader.id, "view");
     world.projection_uniform_location = glGetUniformLocation(world.shader.id, "projection");
 
-    world.texture_atlas = texture_create("../assets/textures/dirt.jpg");
+    world.texture_atlas = texture_create("../assets/textures/texture_atlas.png");
 
     return world;
 }
 
 void world_update(World* world) {
-
+    
 }
 
 void world_draw(World* world, Fly_Camera* camera) {

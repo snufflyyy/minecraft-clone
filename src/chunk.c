@@ -14,7 +14,7 @@ Chunk chunk_create() {
     for (int x = 0; x < CHUNK_SIZE; x++) {
         for (int y = 0; y < CHUNK_SIZE; y++) {
             for (int z = 0; z < CHUNK_SIZE; z++) {
-                chunk.blocks[x * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + z].type = GRASS;
+                chunk.blocks[x * (CHUNK_SIZE * CHUNK_SIZE) + y * CHUNK_SIZE + z] = block_create(GRASS);
             }
         }
     }
@@ -153,22 +153,26 @@ void chunk_generate_mesh(Chunk* chunk) {
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y + 0.5f, z + 0.5f},
                         .normal = {0.0f, 1.0f, 0.0f},
-                        .texture_coord = {1.0f, 0.0f}
+                        .texture_coord = {1.0f, 1.0f},
+                        .texture_index = chunk->blocks->top_texture_index
                     };
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y + 0.5f, z + 0.5f},
                         .normal = {0.0f, 1.0f, 0.0f},
-                        .texture_coord = {0.0f, 0.0f}
+                        .texture_coord = {0.0f, 1.0f},
+                        .texture_index = chunk->blocks->top_texture_index
                     };
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y + 0.5f, z - 0.5f},
                         .normal = {0.0f, 1.0f, 0.0f},
-                        .texture_coord = {0.0f, 1.0f}
+                        .texture_coord = {0.0f, 0.0f},
+                        .texture_index = chunk->blocks->top_texture_index
                     };        
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y + 0.5f, z - 0.5f},
                         .normal = {0.0f, 1.0f, 0.0f},
-                        .texture_coord = {1.0f, 1.0f}
+                        .texture_coord = {1.0f, 0.0f},
+                        .texture_index = chunk->blocks->top_texture_index
                     }; 
 
                     unsigned int base_index = chunk->number_of_vertices - 4;
@@ -188,22 +192,26 @@ void chunk_generate_mesh(Chunk* chunk) {
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {0.0f, -1.0f, 0.0f},
-                        .texture_coord = {1.0f, 0.0f}
+                        .texture_coord = {1.0f, 1.0f},
+                        .texture_index = chunk->blocks->bottom_texture_index
                     };
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {0.0f, -1.0f, 0.0f},
-                        .texture_coord = {0.0f, 0.0f}
+                        .texture_coord = {0.0f, 1.0f},
+                        .texture_index = chunk->blocks->bottom_texture_index
                     };
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y - 0.5f, z - 0.5f},
                         .normal = {0.0f, -1.0f, 0.0f},
-                        .texture_coord = {0.0f, 1.0f}
+                        .texture_coord = {0.0f, 0.0f},
+                        .texture_index = chunk->blocks->bottom_texture_index
                     };
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y - 0.5f, z - 0.5f},
                         .normal = {0.0f, -1.0f, 0.0f},
-                        .texture_coord = {1.0f, 1.0f}
+                        .texture_coord = {1.0f, 0.0f},
+                        .texture_index = chunk->blocks->bottom_texture_index
                     };
 
                     unsigned int base_index = chunk->number_of_vertices - 4;
@@ -223,22 +231,26 @@ void chunk_generate_mesh(Chunk* chunk) {
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {-1.0f, 0.0f, 0.0f},
-                        .texture_coord = {1.0f, 0.0f}
+                        .texture_coord = {1.0f, 1.0f},
+                        .texture_index = chunk->blocks->sides_texture_index
                     };
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y - 0.5f, z - 0.5f},
                         .normal = {-1.0f, 0.0f, 0.0f},
-                        .texture_coord = {0.0f, 0.0f}
+                        .texture_coord = {0.0f, 1.0f},
+                        .texture_index = chunk->blocks->sides_texture_index
                     };
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y + 0.5f, z - 0.5f},
                         .normal = {-1.0f, 0.0f, 0.0f},
-                        .texture_coord = {0.0f, 1.0f}
+                        .texture_coord = {0.0f, 0.0f},
+                        .texture_index = chunk->blocks->sides_texture_index
                     };
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y + 0.5f, z + 0.5f},
                         .normal = {-1.0f, 0.0f, 0.0f},
-                        .texture_coord = {1.0f, 1.0f}
+                        .texture_coord = {1.0f, 0.0f},
+                        .texture_index = chunk->blocks->sides_texture_index
                     };
 
                     unsigned int base_index = chunk->number_of_vertices - 4;
@@ -258,22 +270,26 @@ void chunk_generate_mesh(Chunk* chunk) {
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {1.0f, 0.0f, 0.0f},
-                        .texture_coord = {1.0f, 0.0f}
+                        .texture_coord = {1.0f, 1.0f},
+                        .texture_index = chunk->blocks->sides_texture_index
                     };
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y - 0.5f, z - 0.5f},
                         .normal = {1.0f, 0.0f, 0.0f},
-                        .texture_coord = {0.0f, 0.0f}
+                        .texture_coord = {0.0f, 1.0f},
+                        .texture_index = chunk->blocks->sides_texture_index
                     };
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y + 0.5f, z - 0.5f},
                         .normal = {1.0f, 0.0f, 0.0f},
-                        .texture_coord = {0.0f, 1.0f}
+                        .texture_coord = {0.0f, 0.0f},
+                        .texture_index = chunk->blocks->sides_texture_index
                     };
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y + 0.5f, z + 0.5f},
                         .normal = {1.0f, 0.0f, 0.0f},
-                        .texture_coord = {1.0f, 1.0f}
+                        .texture_coord = {1.0f, 0.0f},
+                        .texture_index = chunk->blocks->sides_texture_index
                     };
 
                     unsigned int base_index = chunk->number_of_vertices - 4;
@@ -293,22 +309,26 @@ void chunk_generate_mesh(Chunk* chunk) {
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {0.0f, 0.0f, -1.0f},
-                        .texture_coord = {1.0f, 0.0f}
+                        .texture_coord = {1.0f, 1.0f},
+                        .texture_index = chunk->blocks->sides_texture_index
                     };
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y - 0.5f, z + 0.5f},
                         .normal = {0.0f, 0.0f, -1.0f},
-                        .texture_coord = {0.0f, 0.0f}
+                        .texture_coord = {0.0f, 1.0f},
+                        .texture_index = chunk->blocks->sides_texture_index
                     };
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y + 0.5f, z + 0.5f},
                         .normal = {0.0f, 0.0f, -1.0f},
-                        .texture_coord = {0.0f, 1.0f}
+                        .texture_coord = {0.0f, 0.0f},
+                        .texture_index = chunk->blocks->sides_texture_index
                     };
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y + 0.5f, z + 0.5f},
                         .normal = {0.0f, 0.0f, -1.0f},
-                        .texture_coord = {1.0f, 1.0f}
+                        .texture_coord = {1.0f, 0.0f},
+                        .texture_index = chunk->blocks->sides_texture_index
                     };
 
                     unsigned int base_index = chunk->number_of_vertices - 4;
@@ -328,22 +348,26 @@ void chunk_generate_mesh(Chunk* chunk) {
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y - 0.5f, z - 0.5f},
                         .normal = {0.0f, 0.0f, 1.0f},
-                        .texture_coord = {1.0f, 0.0f}
+                        .texture_coord = {1.0f, 1.0f},
+                        .texture_index = chunk->blocks->sides_texture_index
                     };
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y - 0.5f, z - 0.5f},
                         .normal = {0.0f, 0.0f, 1.0f},
-                        .texture_coord = {0.0f, 0.0f}
+                        .texture_coord = {0.0f, 1.0f},
+                        .texture_index = chunk->blocks->sides_texture_index
                     };
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x + 0.5f, y + 0.5f, z - 0.5f},
                         .normal = {0.0f, 0.0f, 1.0f},
-                        .texture_coord = {0.0f, 1.0f}
+                        .texture_coord = {0.0f, 0.0f},
+                        .texture_index = chunk->blocks->sides_texture_index
                     };
                     chunk->vertices[chunk->number_of_vertices++] = (Vertex) {
                         .position = {x - 0.5f, y + 0.5f, z - 0.5f},
                         .normal = {0.0f, 0.0f, 1.0f},
-                        .texture_coord = {1.0f, 1.0f}
+                        .texture_coord = {1.0f, 0.0f},
+                        .texture_index = chunk->blocks->sides_texture_index
                     };
 
                     unsigned int base_index = chunk->number_of_vertices - 4;
@@ -375,6 +399,8 @@ void chunk_generate_mesh(Chunk* chunk) {
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, texture_coord));
     glEnableVertexAttribArray(2);
+    glVertexAttribPointer(3, 1, GL_INT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, texture_index));
+    glEnableVertexAttribArray(3);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
